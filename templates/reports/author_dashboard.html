@@ -1,0 +1,85 @@
+{% extends 'base.html' %}
+{% block title %}Author Dashboard — ReportPortal{% endblock %}
+{% block content %}
+<div class="page-header" style="display:flex;justify-content:space-between;align-items:flex-end;flex-wrap:wrap;gap:1rem;">
+  <div>
+    <h1>My Reports</h1>
+    <p>Track all your submitted reports and their review status.</p>
+  </div>
+  <a href="{% url 'submit_report' %}" class="btn btn-teal">+ Submit New Report</a>
+</div>
+
+<div class="stat-grid">
+  <div class="stat-card">
+    <div class="stat-num">{{ stats.total }}</div>
+    <div class="stat-label">Total Submitted</div>
+  </div>
+  <div class="stat-card teal">
+    <div class="stat-num">{{ stats.under_review }}</div>
+    <div class="stat-label">Under Review</div>
+  </div>
+  <div class="stat-card green">
+    <div class="stat-num">{{ stats.accepted }}</div>
+    <div class="stat-label">Accepted</div>
+  </div>
+  <div class="stat-card amber">
+    <div class="stat-num">{{ stats.revision }}</div>
+    <div class="stat-label">Needs Revision</div>
+  </div>
+</div>
+
+<div class="card">
+  {% if reports %}
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Title</th>
+          <th>Type</th>
+          <th>Submitted</th>
+          <th>Status</th>
+          <th>Reviewer Feedback</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for report in reports %}
+        <tr>
+          <td>
+            <strong style="font-size:0.95rem;">{{ report.title }}</strong>
+            <div style="font-size:0.8rem;color:var(--text3);margin-top:2px;">{{ report.keywords|truncatechars:60 }}</div>
+          </td>
+          <td><span class="badge badge-blue">{{ report.get_report_type_display }}</span></td>
+          <td style="font-size:0.85rem;color:var(--text2);">{{ report.submitted_at|date:"d M Y" }}</td>
+          <td>
+            {% if report.status == 'submitted' %}<span class="badge badge-blue"><span class="badge-dot"></span>Submitted</span>
+            {% elif report.status == 'under_review' %}<span class="badge badge-amber"><span class="badge-dot"></span>Under Review</span>
+            {% elif report.status == 'accepted' %}<span class="badge badge-green"><span class="badge-dot"></span>Accepted</span>
+            {% elif report.status == 'revision_required' %}<span class="badge badge-coral"><span class="badge-dot"></span>Revision Required</span>
+            {% elif report.status == 'rejected' %}<span class="badge badge-red"><span class="badge-dot"></span>Rejected</span>
+            {% endif %}
+          </td>
+          <td>
+            {% if report.reviewer_feedback %}
+            <details style="cursor:pointer;">
+              <summary style="font-size:0.85rem;color:var(--accent);">View feedback</summary>
+              <div class="abstract-box" style="margin-top:8px;">{{ report.reviewer_feedback }}</div>
+            </details>
+            {% else %}
+            <span style="font-size:0.85rem;color:var(--text3);">Awaiting review</span>
+            {% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="empty-state">
+    <div class="empty-icon">📄</div>
+    <h3>No reports yet</h3>
+    <p style="margin-bottom:1.5rem;">You haven't submitted any reports. Start by submitting your first one.</p>
+    <a href="{% url 'submit_report' %}" class="btn btn-primary">Submit Your First Report</a>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

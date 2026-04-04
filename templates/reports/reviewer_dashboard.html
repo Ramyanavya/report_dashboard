@@ -1,0 +1,86 @@
+{% extends 'base.html' %}
+{% block title %}Reviewer Dashboard — ReportPortal{% endblock %}
+{% block content %}
+<div class="page-header">
+  <h1>My Assigned Reviews</h1>
+  <p>Papers assigned to you for review. Read the full document and submit your feedback.</p>
+</div>
+
+{% if reports %}
+<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(360px,1fr));gap:1.5rem;">
+  {% for report in reports %}
+  <div class="card" style="display:flex;flex-direction:column;gap:1rem;">
+
+    <!-- Header -->
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:1rem;">
+      <div>
+        <span class="badge badge-blue" style="margin-bottom:6px;">{{ report.get_report_type_display }}</span>
+        <h3 style="font-size:1rem;font-weight:600;line-height:1.4;">{{ report.title }}</h3>
+        <div style="font-size:0.82rem;color:var(--text3);margin-top:4px;">by {{ report.author_name }}</div>
+      </div>
+      {% if report.status == 'under_review' %}<span class="badge badge-amber"><span class="badge-dot"></span>Pending</span>
+      {% elif report.status == 'accepted' %}<span class="badge badge-green"><span class="badge-dot"></span>Accepted</span>
+      {% elif report.status == 'revision_required' %}<span class="badge badge-coral"><span class="badge-dot"></span>Revision</span>
+      {% elif report.status == 'rejected' %}<span class="badge badge-red"><span class="badge-dot"></span>Rejected</span>
+      {% endif %}
+    </div>
+
+    <!-- Keywords -->
+    <div style="font-size:0.82rem;color:var(--text2);">
+      <strong style="color:var(--text3);text-transform:uppercase;letter-spacing:0.05em;font-size:0.75rem;">Keywords:</strong>
+      {{ report.keywords }}
+    </div>
+
+    <!-- Abstract preview -->
+    <div>
+      <div style="font-size:0.75rem;color:var(--text3);text-transform:uppercase;letter-spacing:0.05em;font-weight:600;margin-bottom:6px;">Abstract</div>
+      <div class="abstract-box" style="font-size:0.85rem;max-height:100px;overflow:hidden;position:relative;">
+        {{ report.abstract|truncatechars:200 }}
+      </div>
+    </div>
+
+    <!-- Convener notes -->
+    {% if report.convener_notes %}
+    <div style="background:var(--accent-light);border-radius:8px;padding:10px 12px;">
+      <div style="font-size:0.75rem;color:var(--accent);text-transform:uppercase;letter-spacing:0.05em;font-weight:600;margin-bottom:4px;">Convener Notes</div>
+      <div style="font-size:0.85rem;color:var(--accent-dark);">{{ report.convener_notes }}</div>
+    </div>
+    {% endif %}
+
+    <!-- Documents & Actions -->
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:auto;padding-top:0.5rem;border-top:1px solid var(--border);">
+      {% if report.paper_doc %}
+      <a href="{{ report.paper_doc.url }}" target="_blank" class="btn btn-outline btn-sm">📄 Full Paper</a>
+      {% endif %}
+      {% if report.plagiarism_doc %}
+      <a href="{{ report.plagiarism_doc.url }}" target="_blank" class="btn btn-outline btn-sm">📋 Plagiarism</a>
+      {% endif %}
+      {% if report.status == 'under_review' %}
+      <a href="{% url 'submit_review' report.id %}" class="btn btn-teal btn-sm" style="margin-left:auto;">Submit Review →</a>
+      {% else %}
+      <span style="margin-left:auto;font-size:0.82rem;color:var(--text3);align-self:center;">Review submitted</span>
+      {% endif %}
+    </div>
+
+    <!-- Submitted review -->
+    {% if report.reviewer_feedback %}
+    <details style="margin-top:-0.5rem;">
+      <summary style="font-size:0.82rem;color:var(--text2);cursor:pointer;">View submitted feedback</summary>
+      <div class="abstract-box" style="margin-top:8px;font-size:0.85rem;">{{ report.reviewer_feedback }}</div>
+    </details>
+    {% endif %}
+
+  </div>
+  {% endfor %}
+</div>
+
+{% else %}
+<div class="card">
+  <div class="empty-state">
+    <div class="empty-icon">🔍</div>
+    <h3>No papers assigned yet</h3>
+    <p>You will receive an email when a convener assigns a paper to you for review.</p>
+  </div>
+</div>
+{% endif %}
+{% endblock %}

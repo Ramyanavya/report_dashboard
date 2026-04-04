@@ -1,0 +1,77 @@
+{% extends 'base.html' %}
+{% block title %}Assign Reviewer — ReportPortal{% endblock %}
+{% block content %}
+<div class="page-header">
+  <a href="{% url 'convener_dashboard' %}" style="font-size:0.85rem;color:var(--text3);">← Back to dashboard</a>
+  <h1 style="margin-top:0.5rem;">Assign Reviewer</h1>
+  <p>Select a reviewer and send them the abstract for evaluation.</p>
+</div>
+
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;align-items:start;max-width:900px;">
+
+  <!-- Report Summary -->
+  <div class="card">
+    <div class="card-title">Report Summary</div>
+    <div style="margin-bottom:1rem;">
+      <div style="font-size:0.78rem;color:var(--text3);text-transform:uppercase;letter-spacing:0.05em;font-weight:600;margin-bottom:4px;">Title</div>
+      <div style="font-weight:500;">{{ report.title }}</div>
+    </div>
+    <div style="margin-bottom:1rem;">
+      <div style="font-size:0.78rem;color:var(--text3);text-transform:uppercase;letter-spacing:0.05em;font-weight:600;margin-bottom:4px;">Author</div>
+      <div>{{ report.author_name }}</div>
+    </div>
+    <div style="margin-bottom:1rem;">
+      <div style="font-size:0.78rem;color:var(--text3);text-transform:uppercase;letter-spacing:0.05em;font-weight:600;margin-bottom:4px;">Type</div>
+      <span class="badge badge-blue">{{ report.get_report_type_display }}</span>
+    </div>
+    <div style="margin-bottom:1rem;">
+      <div style="font-size:0.78rem;color:var(--text3);text-transform:uppercase;letter-spacing:0.05em;font-weight:600;margin-bottom:4px;">Keywords</div>
+      <div style="font-size:0.9rem;color:var(--text2);">{{ report.keywords }}</div>
+    </div>
+    <div>
+      <div style="font-size:0.78rem;color:var(--text3);text-transform:uppercase;letter-spacing:0.05em;font-weight:600;margin-bottom:6px;">Abstract (sent to reviewer)</div>
+      <div class="abstract-box">{{ report.abstract }}</div>
+    </div>
+  </div>
+
+  <!-- Assignment Form -->
+  <div class="card">
+    <div class="card-title">Select Reviewer</div>
+    <form method="post">
+      {% csrf_token %}
+
+      <div class="form-group">
+        <label>Choose Reviewer <span style="color:var(--red);">*</span></label>
+        {% if reviewers %}
+        <select name="reviewer_id" required>
+          <option value="">— Select a reviewer —</option>
+          {% for reviewer in reviewers %}
+          <option value="{{ reviewer.id }}" {% if report.assigned_reviewer == reviewer %}selected{% endif %}>
+            {{ reviewer.full_name|default:reviewer.email }} — {{ reviewer.email }}
+          </option>
+          {% endfor %}
+        </select>
+        {% else %}
+        <div style="padding:12px;background:var(--red-light);border-radius:8px;color:var(--red);font-size:0.875rem;">
+          No reviewers found. Please add reviewer accounts from the admin panel first.
+        </div>
+        {% endif %}
+      </div>
+
+      <div class="form-group">
+        <label>Notes for Reviewer</label>
+        <textarea name="convener_notes" rows="4" placeholder="Add any specific instructions or notes for the reviewer...">{{ report.convener_notes }}</textarea>
+        <div class="form-hint">These notes will be included in the email to the reviewer.</div>
+      </div>
+
+      <div style="display:flex;gap:1rem;">
+        <button type="submit" class="btn btn-teal" {% if not reviewers %}disabled{% endif %}>
+          Send to Reviewer →
+        </button>
+        <a href="{% url 'report_detail_convener' report.id %}" class="btn btn-outline">Cancel</a>
+      </div>
+    </form>
+  </div>
+
+</div>
+{% endblock %}

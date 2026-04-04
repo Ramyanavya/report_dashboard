@@ -1,0 +1,116 @@
+{% extends 'base.html' %}
+{% block title %}Submit Review — ReportPortal{% endblock %}
+{% block content %}
+<div class="page-header">
+  <a href="{% url 'reviewer_dashboard' %}" style="font-size:0.85rem;color:var(--text3);">← Back to dashboard</a>
+  <h1 style="margin-top:0.5rem;">Submit Review</h1>
+  <p>Write your feedback and select a decision for this paper.</p>
+</div>
+
+<div style="display:grid;grid-template-columns:1fr 1.2fr;gap:1.5rem;align-items:start;max-width:960px;">
+
+  <!-- Paper Info -->
+  <div>
+    <div class="card" style="margin-bottom:1.5rem;">
+      <div class="card-title">Paper Details</div>
+      <div style="display:flex;flex-direction:column;gap:1rem;">
+        <div>
+          <div style="font-size:0.78rem;color:var(--text3);text-transform:uppercase;letter-spacing:0.05em;font-weight:600;margin-bottom:4px;">Title</div>
+          <div style="font-weight:500;line-height:1.4;">{{ report.title }}</div>
+        </div>
+        <div>
+          <div style="font-size:0.78rem;color:var(--text3);text-transform:uppercase;letter-spacing:0.05em;font-weight:600;margin-bottom:4px;">Author</div>
+          <div>{{ report.author_name }}</div>
+        </div>
+        {% if report.contributors %}
+        <div>
+          <div style="font-size:0.78rem;color:var(--text3);text-transform:uppercase;letter-spacing:0.05em;font-weight:600;margin-bottom:4px;">Contributors</div>
+          <div style="font-size:0.9rem;color:var(--text2);">{{ report.contributors }}</div>
+        </div>
+        {% endif %}
+        <div>
+          <div style="font-size:0.78rem;color:var(--text3);text-transform:uppercase;letter-spacing:0.05em;font-weight:600;margin-bottom:4px;">Type</div>
+          <span class="badge badge-blue">{{ report.get_report_type_display }}</span>
+        </div>
+        <div>
+          <div style="font-size:0.78rem;color:var(--text3);text-transform:uppercase;letter-spacing:0.05em;font-weight:600;margin-bottom:4px;">Keywords</div>
+          <div style="font-size:0.9rem;color:var(--text2);">{{ report.keywords }}</div>
+        </div>
+        <div>
+          <div style="font-size:0.78rem;color:var(--text3);text-transform:uppercase;letter-spacing:0.05em;font-weight:600;margin-bottom:6px;">Abstract</div>
+          <div class="abstract-box">{{ report.abstract }}</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Documents</div>
+      <div style="display:flex;flex-direction:column;gap:8px;">
+        {% if report.paper_doc %}
+        <a href="{{ report.paper_doc.url }}" target="_blank" class="btn btn-outline" style="justify-content:center;">📄 View Full Paper</a>
+        {% endif %}
+        {% if report.plagiarism_doc %}
+        <a href="{{ report.plagiarism_doc.url }}" target="_blank" class="btn btn-outline" style="justify-content:center;">📋 Plagiarism Report</a>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <!-- Review Form -->
+  <div class="card">
+    <div class="card-title">Your Review</div>
+    <form method="post">
+      {% csrf_token %}
+
+      <div class="form-group">
+        <label>Review Decision <span style="color:var(--red);">*</span></label>
+        <div style="display:flex;flex-direction:column;gap:8px;">
+          <label style="display:flex;align-items:center;gap:10px;font-size:0.95rem;font-weight:400;color:var(--text);text-transform:none;letter-spacing:0;cursor:pointer;padding:10px 14px;border:1.5px solid var(--border2);border-radius:8px;transition:border 0.2s;" id="lbl-accepted">
+            <input type="radio" name="decision" value="accepted" onchange="highlight(this)" style="width:auto;margin:0;"> 
+            <span style="font-size:1.1rem;">✅</span> Accept — Paper is ready for publication
+          </label>
+          <label style="display:flex;align-items:center;gap:10px;font-size:0.95rem;font-weight:400;color:var(--text);text-transform:none;letter-spacing:0;cursor:pointer;padding:10px 14px;border:1.5px solid var(--border2);border-radius:8px;transition:border 0.2s;" id="lbl-revision_required">
+            <input type="radio" name="decision" value="revision_required" onchange="highlight(this)" style="width:auto;margin:0;">
+            <span style="font-size:1.1rem;">✏️</span> Revision Required — Changes needed
+          </label>
+          <label style="display:flex;align-items:center;gap:10px;font-size:0.95rem;font-weight:400;color:var(--text);text-transform:none;letter-spacing:0;cursor:pointer;padding:10px 14px;border:1.5px solid var(--border2);border-radius:8px;transition:border 0.2s;" id="lbl-rejected">
+            <input type="radio" name="decision" value="rejected" onchange="highlight(this)" style="width:auto;margin:0;">
+            <span style="font-size:1.1rem;">❌</span> Reject — Does not meet standards
+          </label>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Detailed Feedback <span style="color:var(--red);">*</span></label>
+        <textarea name="feedback" rows="10" placeholder="Write your detailed review here. Include:
+• Summary of the paper's contribution
+• Strengths and weaknesses
+• Specific issues or errors found
+• Suggestions for improvement
+• Justification for your decision"></textarea>
+        <div class="form-hint">Your feedback will be shared with the convener and eventually the author.</div>
+      </div>
+
+      <div style="display:flex;gap:1rem;">
+        <button type="submit" class="btn btn-teal">Submit Review →</button>
+        <a href="{% url 'reviewer_dashboard' %}" class="btn btn-outline">Cancel</a>
+      </div>
+    </form>
+  </div>
+
+</div>
+
+<script>
+function highlight(radio) {
+  ['accepted','revision_required','rejected'].forEach(v => {
+    const lbl = document.getElementById('lbl-' + v);
+    if (lbl) lbl.style.borderColor = 'var(--border2)';
+  });
+  const lbl = document.getElementById('lbl-' + radio.value);
+  if (lbl) {
+    const colors = { accepted: 'var(--green)', revision_required: 'var(--amber)', rejected: 'var(--red)' };
+    lbl.style.borderColor = colors[radio.value] || 'var(--accent)';
+  }
+}
+</script>
+{% endblock %}

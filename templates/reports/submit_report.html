@@ -1,0 +1,78 @@
+{% extends 'base.html' %}
+{% block title %}Submit Report — ReportPortal{% endblock %}
+{% block content %}
+<div class="page-header">
+  <h1>Submit a Report</h1>
+  <p>Fill in the details below and upload your documents.</p>
+</div>
+
+<div style="max-width:760px;">
+  <form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+
+    <div class="card" style="margin-bottom:1.5rem;">
+      <div class="card-title">Report Information</div>
+
+      <div class="form-group">
+        <label>Report Type <span style="color:var(--red);">*</span></label>
+        <select name="report_type" required>
+          <option value="">— Select type —</option>
+          <option value="technical">Technical Report</option>
+          <option value="verification">Verification Report</option>
+          <option value="research">Research Report</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>Title <span style="color:var(--red);">*</span></label>
+        <input type="text" name="title" placeholder="Full title of your report" required>
+      </div>
+
+      <div class="form-grid">
+        <div class="form-group">
+          <label>Author Name <span style="color:var(--red);">*</span></label>
+          <input type="text" name="author_name" placeholder="Your full name" required>
+        </div>
+        <div class="form-group">
+          <label>Contributors</label>
+          <input type="text" name="contributors" placeholder="Name1, Name2, Name3">
+          <div class="form-hint">Separate multiple names with commas</div>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Abstract <span style="color:var(--red);">*</span></label>
+        <textarea name="abstract" placeholder="Write a concise summary of your report (150–300 words)..." rows="6" required></textarea>
+      </div>
+
+      <div class="form-group">
+        <label>Keywords <span style="color:var(--red);">*</span></label>
+        <input type="text" name="keywords" placeholder="machine learning, data analysis, neural networks" required>
+        <div class="form-hint">Separate keywords with commas</div>
+      </div>
+    </div>
+
+    <div class="card" style="margin-bottom:1.5rem;">
+      <div class="card-title">Upload Documents</div>
+
+      <div class="form-grid">
+        <div class="form-group">
+          <label>Paper Document <span style="color:var(--red);">*</span></label>
+          <input type="file" name="paper_doc" accept=".pdf,.doc,.docx" required>
+          <div class="form-hint">PDF, DOC or DOCX (max 20MB)</div>
+        </div>
+        <div class="form-group">
+          <label>Plagiarism Report</label>
+          <input type="file" name="plagiarism_doc" accept=".pdf,.doc,.docx">
+          <div class="form-hint">Upload if available</div>
+        </div>
+      </div>
+    </div>
+
+    <div style="display:flex;gap:1rem;align-items:center;">
+      <button type="submit" class="btn btn-teal">Submit Report →</button>
+      <a href="{% url 'author_dashboard' %}" class="btn btn-outline">Cancel</a>
+    </div>
+  </form>
+</div>
+{% endblock %}

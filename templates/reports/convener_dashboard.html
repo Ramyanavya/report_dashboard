@@ -1,0 +1,119 @@
+{% extends 'base.html' %}
+{% block title %}Convener Dashboard — ReportPortal{% endblock %}
+{% block content %}
+<div class="page-header">
+  <h1>Convener Dashboard</h1>
+  <p>Manage all submitted reports, assign reviewers, and update statuses.</p>
+</div>
+
+<div class="stat-grid">
+  <div class="stat-card">
+    <div class="stat-num">{{ stats.total }}</div>
+    <div class="stat-label">All Reports</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-num">{{ stats.submitted }}</div>
+    <div class="stat-label">Awaiting Assignment</div>
+  </div>
+  <div class="stat-card teal">
+    <div class="stat-num">{{ stats.under_review }}</div>
+    <div class="stat-label">Under Review</div>
+  </div>
+  <div class="stat-card amber">
+    <div class="stat-num">{{ stats.revision }}</div>
+    <div class="stat-label">Revision Needed</div>
+  </div>
+  <div class="stat-card green">
+    <div class="stat-num">{{ stats.accepted }}</div>
+    <div class="stat-label">Accepted</div>
+  </div>
+  <div class="stat-card red">
+    <div class="stat-num">{{ stats.rejected }}</div>
+    <div class="stat-label">Rejected</div>
+  </div>
+</div>
+
+<!-- Filters -->
+<form method="get" class="filter-bar">
+  <select name="status" onchange="this.form.submit()">
+    <option value="">All Statuses</option>
+    <option value="submitted" {% if status_filter == 'submitted' %}selected{% endif %}>Submitted</option>
+    <option value="under_review" {% if status_filter == 'under_review' %}selected{% endif %}>Under Review</option>
+    <option value="revision_required" {% if status_filter == 'revision_required' %}selected{% endif %}>Revision Required</option>
+    <option value="accepted" {% if status_filter == 'accepted' %}selected{% endif %}>Accepted</option>
+    <option value="rejected" {% if status_filter == 'rejected' %}selected{% endif %}>Rejected</option>
+  </select>
+  <select name="type" onchange="this.form.submit()">
+    <option value="">All Types</option>
+    <option value="technical" {% if type_filter == 'technical' %}selected{% endif %}>Technical</option>
+    <option value="verification" {% if type_filter == 'verification' %}selected{% endif %}>Verification</option>
+    <option value="research" {% if type_filter == 'research' %}selected{% endif %}>Research</option>
+  </select>
+  {% if status_filter or type_filter %}
+  <a href="{% url 'convener_dashboard' %}" class="btn btn-outline btn-sm">Clear filters</a>
+  {% endif %}
+</form>
+
+<div class="card">
+  {% if reports %}
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Report</th>
+          <th>Author</th>
+          <th>Type</th>
+          <th>Submitted</th>
+          <th>Status</th>
+          <th>Reviewer</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for report in reports %}
+        <tr>
+          <td style="max-width:240px;">
+            <strong style="font-size:0.92rem;display:block;">{{ report.title|truncatechars:70 }}</strong>
+            <div style="font-size:0.78rem;color:var(--text3);margin-top:3px;">{{ report.keywords|truncatechars:50 }}</div>
+          </td>
+          <td>
+            <div style="font-size:0.9rem;">{{ report.author_name }}</div>
+            <div style="font-size:0.78rem;color:var(--text3);">{{ report.author.email }}</div>
+          </td>
+          <td><span class="badge badge-blue">{{ report.get_report_type_display }}</span></td>
+          <td style="font-size:0.85rem;color:var(--text2);white-space:nowrap;">{{ report.submitted_at|date:"d M Y" }}</td>
+          <td>
+            {% if report.status == 'submitted' %}<span class="badge badge-blue"><span class="badge-dot"></span>Submitted</span>
+            {% elif report.status == 'under_review' %}<span class="badge badge-amber"><span class="badge-dot"></span>Under Review</span>
+            {% elif report.status == 'accepted' %}<span class="badge badge-green"><span class="badge-dot"></span>Accepted</span>
+            {% elif report.status == 'revision_required' %}<span class="badge badge-coral"><span class="badge-dot"></span>Revision Needed</span>
+            {% elif report.status == 'rejected' %}<span class="badge badge-red"><span class="badge-dot"></span>Rejected</span>
+            {% endif %}
+          </td>
+          <td style="font-size:0.85rem;">
+            {% if report.assigned_reviewer %}
+              {{ report.assigned_reviewer.full_name|default:report.assigned_reviewer.email }}
+            {% else %}
+              <span style="color:var(--text3);">Unassigned</span>
+            {% endif %}
+          </td>
+          <td>
+            <div style="display:flex;gap:6px;flex-wrap:wrap;">
+              <a href="{% url 'report_detail_convener' report.id %}" class="btn btn-outline btn-sm">View</a>
+              <a href="{% url 'assign_reviewer' report.id %}" class="btn btn-primary btn-sm">Assign</a>
+            </div>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="empty-state">
+    <div class="empty-icon">📋</div>
+    <h3>No reports found</h3>
+    <p>No reports match the current filter.</p>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

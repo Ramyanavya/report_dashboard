@@ -1,0 +1,89 @@
+{% extends 'base.html' %}
+{% block title %}{{ report.title }} — Convener View{% endblock %}
+{% block content %}
+<div class="page-header" style="display:flex;justify-content:space-between;align-items:flex-end;flex-wrap:wrap;gap:1rem;">
+  <div>
+    <a href="{% url 'convener_dashboard' %}" style="font-size:0.85rem;color:var(--text3);">← Back to dashboard</a>
+    <h1 style="margin-top:0.5rem;">{{ report.title }}</h1>
+    <div style="display:flex;gap:8px;margin-top:0.5rem;align-items:center;">
+      <span class="badge badge-blue">{{ report.get_report_type_display }}</span>
+      {% if report.status == 'submitted' %}<span class="badge badge-blue"><span class="badge-dot"></span>Submitted</span>
+      {% elif report.status == 'under_review' %}<span class="badge badge-amber"><span class="badge-dot"></span>Under Review</span>
+      {% elif report.status == 'accepted' %}<span class="badge badge-green"><span class="badge-dot"></span>Accepted</span>
+      {% elif report.status == 'revision_required' %}<span class="badge badge-coral"><span class="badge-dot"></span>Revision Needed</span>
+      {% elif report.status == 'rejected' %}<span class="badge badge-red"><span class="badge-dot"></span>Rejected</span>
+      {% endif %}
+    </div>
+  </div>
+  <!-- Update Status Form -->
+  <form method="post" action="{% url 'update_status' report.id %}" style="display:flex;gap:8px;align-items:center;">
+    {% csrf_token %}
+    <select name="status" style="width:auto;padding:8px 12px;font-size:0.875rem;">
+      <option value="submitted" {% if report.status == 'submitted' %}selected{% endif %}>Submitted</option>
+      <option value="under_review" {% if report.status == 'under_review' %}selected{% endif %}>Under Review</option>
+      <option value="revision_required" {% if report.status == 'revision_required' %}selected{% endif %}>Revision Required</option>
+      <option value="accepted" {% if report.status == 'accepted' %}selected{% endif %}>Accepted</option>
+      <option value="rejected" {% if report.status == 'rejected' %}selected{% endif %}>Rejected</option>
+    </select>
+    <button type="submit" class="btn btn-primary btn-sm">Update Status</button>
+  </form>
+</div>
+
+<div style="display:grid;grid-template-columns:2fr 1fr;gap:1.5rem;align-items:start;">
+  <div>
+    <!-- Main details -->
+    <div class="card" style="margin-bottom:1.5rem;">
+      <div class="card-title">Report Details</div>
+      <div class="detail-grid" style="margin-bottom:1.25rem;">
+        <div class="detail-item"><label>Author Name</label><p>{{ report.author_name }}</p></div>
+        <div class="detail-item"><label>Submitted By (Email)</label><p>{{ report.author.email }}</p></div>
+        <div class="detail-item"><label>Contributors</label><p>{{ report.contributors|default:"—" }}</p></div>
+        <div class="detail-item"><label>Keywords</label><p>{{ report.keywords }}</p></div>
+        <div class="detail-item"><label>Submitted On</label><p>{{ report.submitted_at|date:"d M Y, H:i" }}</p></div>
+        <div class="detail-item"><label>Last Updated</label><p>{{ report.updated_at|date:"d M Y, H:i" }}</p></div>
+      </div>
+      <div>
+        <label style="font-size:0.78rem;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:0.06em;">Abstract</label>
+        <div class="abstract-box">{{ report.abstract }}</div>
+      </div>
+    </div>
+
+    <!-- Reviewer feedback -->
+    {% if report.reviewer_feedback %}
+    <div class="card" style="margin-bottom:1.5rem;">
+      <div class="card-title">Reviewer Feedback</div>
+      {% if report.reviewed_at %}<p style="font-size:0.82rem;color:var(--text3);margin-bottom:0.75rem;">Submitted on {{ report.reviewed_at|date:"d M Y, H:i" }}</p>{% endif %}
+      <div class="abstract-box">{{ report.reviewer_feedback }}</div>
+    </div>
+    {% endif %}
+  </div>
+
+  <div>
+    <!-- Documents -->
+    <div class="card" style="margin-bottom:1.5rem;">
+      <div class="card-title">Documents</div>
+      {% if report.paper_doc %}
+      <a href="{{ report.paper_doc.url }}" target="_blank" class="btn btn-outline" style="width:100%;margin-bottom:8px;justify-content:center;">📄 Download Paper</a>
+      {% endif %}
+      {% if report.plagiarism_doc %}
+      <a href="{{ report.plagiarism_doc.url }}" target="_blank" class="btn btn-outline" style="width:100%;justify-content:center;">📋 Plagiarism Report</a>
+      {% endif %}
+    </div>
+
+    <!-- Assign Reviewer -->
+    <div class="card">
+      <div class="card-title">Assign Reviewer</div>
+      {% if report.assigned_reviewer %}
+      <div style="background:var(--teal-light,#e1f5ee);border-radius:8px;padding:12px;margin-bottom:1rem;">
+        <div style="font-size:0.78rem;color:var(--teal);text-transform:uppercase;letter-spacing:0.05em;font-weight:600;">Currently Assigned</div>
+        <div style="font-weight:500;margin-top:4px;">{{ report.assigned_reviewer.full_name|default:report.assigned_reviewer.email }}</div>
+        <div style="font-size:0.82rem;color:var(--text2);">{{ report.assigned_reviewer.email }}</div>
+      </div>
+      {% endif %}
+      <a href="{% url 'assign_reviewer' report.id %}" class="btn btn-teal" style="width:100%;justify-content:center;">
+        {% if report.assigned_reviewer %}Reassign Reviewer{% else %}Assign Reviewer{% endif %}
+      </a>
+    </div>
+  </div>
+</div>
+{% endblock %}
